@@ -25,10 +25,9 @@ function to_token_list(text) {
 }
 
 function load_tokenizer_list() {
-	var r = require
 	return [
-		new Tokenizer('string', r('../token/string')),
-		//new Tokenizer('white_space', r('../token/white_space')),
+		new Tokenizer(require('../token/string_or_comment')),
+		new Tokenizer(require('../token/white_space')),
 	]
 }
 
@@ -42,10 +41,10 @@ function collect_token(tokenizer_list) {
 
 // Tokenizer
 
-function Tokenizer(name, func) {
-	this.name = name
+function Tokenizer(func) {
+	this.name = undefined
 	this.func = func
-	this.token_bucket = new TokenBucket(name)
+	this.token_bucket = new TokenBucket()
 	this.state = new State()
 }
 
@@ -60,14 +59,15 @@ Tokenizer.prototype.get_token_list = function() {
 
 // TokenBucket
 
-function TokenBucket(name) {
-	this.name = name
+function TokenBucket() {
+	this.name = undefined
 	this.pos = undefined
 	this.token = undefined
 	this.token_list = []
 }
 
 TokenBucket.prototype.push = function(c) {
+	if (c === undefined) return
 
 	// token 中的 0 号元素代表了此 token 的起始位置
 
@@ -78,9 +78,14 @@ TokenBucket.prototype.push = function(c) {
 	this.token.push(c)
 }
 
-TokenBucket.prototype.end = function(c) {
+TokenBucket.prototype.end = function(c, name) {
 	this.push(c)
+	this.token[0][1] = name
 	this.token_list.push(this.token)
+	this.token = undefined
+}
+
+TokenBucket.prototype.clear = function() {
 	this.token = undefined
 }
 

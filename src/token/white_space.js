@@ -4,6 +4,6 @@ exports = module.exports = function (c, token, state) {
 		token.push(c)
 	}
 	else if (!token.is_empty()) {
-		token.end()
+		token.end(undefined, 'white_space')
 	}
 }
